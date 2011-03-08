@@ -1,0 +1,13 @@
+<html><head><title>REST Example Application: edit item 123</title></head>
+<body><form method="POST" action="/full/123">
+<input type="hidden" name="radar.method" value="PUT"/>
+<input type="hidden" name="format" value="human"/>
+<textarea name="radar.body" cols="40" rows="20">
+&lt;item&gt;
+  &lt;id&gt;123&lt;/id&gt;
+  &lt;name&gt;Frank&lt;/name&gt;
+&lt;/item&gt;
+</textarea>
+<br/><input type="SUBMIT" value="update using PUT"/></form></body>
+<a href="/full/">back to list</a>
+</html>

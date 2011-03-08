@@ -1,0 +1,594 @@
+<LINK REL="stylesheet" TYPE="text/css" HREF="stylesheet.css" TITLE="Style">
+<http><head><title>Mojasef - a modular java server framework</title></head>
+<body><div class='wholepage'>
+<div align='center'><a href='index.html'><img src='images/mojasef.jpg' border='0'/></a></div>
+
+<div style='width:100%; height:10px;'></div>
+<div style='width:100%' align='center'>
+<a href='http://sourceforge.net/project/showfiles.php?group_id=127152'><img src='images/but-download.jpg' border='0'/></a>
+<a href='principles.html'><img src='images/but-principles.jpg' border='0'/></a>
+<a href='index.html'><img src='images/but-home.jpg' border='0'/></a>
+<a href='manual.html'><img src='images/but-manual.jpg' border='0'/></a></div>
+
+<h2>A Gentle Ramble</h2>
+
+<p>This is a good place to start if you are not sure what Mojasef is, or what it has to offer. Installation,
+basic configuration, and some of the major features are introduced in a comfortable step-by-step approach.</p>
+
+<b>Contents</b>
+<ol>
+<li><a href='#hello_world'>Hello World</a></li>
+<li><a href='#counting_hits'>Counting Hits</a></li>
+<li><a href='#user_sessions'>User Sessions</a></li>
+<li><a href='#permanent_configurations'>Permanent Configurations</a></li>
+<li><a href='#catching_all_accesses'>Catching All Accesses</a></li>
+<li><a href='#finding_things_out'>Finding Things Out</a></li>
+<li><a href='#passing_things_back'>Passing Things Back To The Server</a></li>
+<li><a href='#sharing_context'>Sharing Context Between Several Methods</a></li>
+<li><a href='#nice_looking_pages'>Making Nice Looking Pages</a></li>
+<li><a href='#magic_with_templates'>Magic With Templates</a></li>
+</ol>
+
+<a name='hello_world'><b>Hello World</b></a>
+
+<p>In the time-honoured tradition, let's start with "hello, world". In keeping with the principles described
+above, we want to be able to reuse as much as possible that we have learned before. So let's start with an
+old "Hello.java" that we might have lying around after learning Java in the first place:</p>
+
+<div class='code'><pre>
+public class Hello
+{
+  public void sayhello()
+  {
+    System.out.println("Hello, World!");
+  }
+
+  public static void main(String[] args)
+  {
+    Hello hello = new Hello();
+    hello.sayhello();
+  }
+}
+</pre></div>
+
+<p>To put this program on the web, we need to make the following changes to it: <i><b>none at all</b></i> :)</p>
+
+<p>To use this program with Mojasef:
+<ol>
+<li>compile Hello.java so that you get a file Hello.class in your current directory
+<li>run Mojasef using <p><tt>java -Dhttp.application$=Hello -jar moja-http.jar</tt></p>
+<li>point your browser at <tt>http://localhost/sayhello</tt>
+</ol>
+
+<p>If all that went according to plan, you should see "Hello World!". That was pretty straightforward, wasn't it.</p>
+
+<p>As an aside, note the "$", that little character is actually part of some key technology that gives mojasef
+its simple and flexible configuration power. See the <a href='manual.html'>manual</a> for more
+details.</p>
+
+<a name='counting_hits'><b>Counting Hits</b></a>
+
+<p>Now, this is pretty simplistic, so far. So let's tighten it up a bit. First, Our "Hello" application may only be a
+dozen lines, but it's still too big. So let's remove some redundant code. We don't need any of that "main" nonsense,
+becuse mojasef already knows how to create an object and call a method.</p>
+
+<div class='code'><pre>
+public class Hello
+{
+  public void sayhello()
+  {
+    System.out.println("Hello, World!");
+  }
+}
+</pre></div>
+
+<p>That all looks neat enough, but it doesn't actually <i>do</i> much so far. How about remembering things between
+page requests? To keep it simple for this example, we'll just make it count accesses.</p>
+
+<div class='code'><pre>
+public class Hello
+{
+  int n = 1;
+
+  public void sayhello()
+  {
+    System.out.println("Hello, World!");
+    System.out.println("visit number " + n++);
+  }
+}
+</pre></div>
+
+<p>Try it. Stop the server (using Control-C, task manager or whatever), recompile Hello.java, and run Mojasef again.
+Refresh your browser a few times to see that it really is counting. Cool. And <i>way</i> simpler than messing about
+with the Servlet API.</p>
+
+<p>OK, those of you with servlet experience might be beginning to worry. Relying on
+member variables in a multi-threaded situation is extremely risky and a classic servlet problem. So this is a little
+simplistic as it stands. If you are getting a lot of hits and you really care about your hit count being
+"absolutely correct", you should probably wrap the increment in a synchronized block. On the other hand,
+you could sidestep the problem by reading the next section.</p>
+
+<a name='user_sessions'><b>User Sessions</b></a>
+
+<p>Counting is good, but sometimes we don't want to share a single value. How about if we want to keep a
+<i>separate</i> count for each visitor? This might seem tricky, but not in mojasef. Just run the server using:
+<ul><tt>java "-Dhttp.application$=http.SessionWrapper Hello" -jar moja-http.jar</tt></ul></p>
+
+<p>To test this yourself you will either need to access it from different machines, or using different browsers.
+Firefox and Internet Explorer, for example. Point both your browsers at the same URL and try different
+combinations of refreshing the page to prove to yourself that the counts really are independent.</p>
+
+<a name='permanent_configurations'><b>Permanent Configurations</b></a>
+
+<p>At this point I'd be getting fed up with typing such a long command line. Luckily Mojasef allows you to store stuff
+like this in a file ready to be picked up when the server starts. Here's a simple way to do that:</p>
+
+<ol>
+<li>create a file in the current directory called "http.spec"
+<li>put the following single line of text in it:
+<p><tt>http.application$=http.SessionWrapper Hello</tt></p>
+<li>Now you can run the server using:
+<p><tt>java -jar moja-http.jar</tt></p>
+</ol>
+
+<a name='catching_all_accesses'><b>Catching all Accesses</b></a>
+
+<p>While playing with this, you may have noticed that it's got a pretty narrow view of what URLs to respond to.
+Anything other than <tt>/sayhello</tt> gets a 404 "not found" error. There are several ways to improve this, but
+one of the simplest is to rename the method from <tt>sayhello()</tt> to <tt>request()</tt>. <tt>request()</tt> is
+one of the method names that Mojasef looks for if it can't find a match on the URL.</p>
+
+<div class='code'><pre>
+public class Hello
+{
+  int n = 1;
+
+  public void request()
+  {
+    System.out.println("Hello, World!");
+    System.out.println("visit number " + n++);
+  }
+}
+</pre></div>
+
+<p>Now our server is much more polite. It will say "hello" to all visitors, whatever URL they ask for.</p>
+
+<p>As an aside, Mojasef will always look for specific names before trying more general options like
+<tt>request</tt>, so we can add another method:</p>
+
+<div class='code'><pre>
+public class Hello
+{
+  int n = 1;
+
+  public void request()
+  {
+    System.out.println("Hello, World!");
+    System.out.println("visit number " + n++);
+  }
+
+  public void secret()
+  {
+    System.out.println("you found the hidden page :)");
+  }
+}
+</pre></div>
+
+<p>Now pretty much every URL we can think of (such as <tt>http://localhost/wibble</tt>, or whatever) will give us
+the "Hello, World" message , but if we happen on <tt>http://localhost/secret</tt> we get the other message. Anyone
+for web services without all that fuss?</p>
+
+<a name='finding_things_out'><b>Finding things out</b></a>
+
+<p>Placing our raw objects on the web is a cool thing to do, but so far, not really as useful as the ugly Servlet API.
+If nothing else we need to be able to look at the parameters passd to GET and POST requests, and maybe other things
+such as request headers, cookies, and system configurations. Luckily, Mojasef comes to our aid with this too.</p>
+
+<p>There are two major ways to get access to this kind of context information. I'll break with tradition in this
+simple tutorial, and introduce both of them, so you can get the idea of the possibilities. For the first approach,
+let's go back to our basic "hello" program and add a parameter to our method:
+
+<div class='code'><pre>
+import org.stringtree.StringFetcher;
+
+public class Hello
+{
+  int n = 1;
+
+  public void sayhello(StringFetcher context)
+  {
+    System.out.println("Hello, World!");
+    System.out.println("visit number " + n++);
+  }
+}
+</pre></div>
+
+<p>As you can see, we have <i>eventually</i> needed to import an extra class. Don't worry, though. This class doesn't
+carry a lot of baggage. StringFetcher is a very simple interface consisting of two methods:</p>
+
+<ul>
+<li><tt>public Object getObject(String key);</tt></li>
+<li><tt>public String get(String key);</tt></li>
+</ul>
+
+<p>If you want to fetch something in the form of a String from the surrounding context, use <tt>get(String key)</tt>.
+This method returns the string value of the named context object, or the empty string ("") if not present.</p>
+
+<p>If you want to fetch any other type of object, use <tt>getObject(String key)</tt> and cast the result if necessary.
+Note that if there is nothing stored with the named key, this methjod will return <tt>null</tt>, so it can also be used
+to check for the presence or absence of a value.</p>
+
+<p>To compile this class you will need to make sure that StringFetcher is in your compilation classpath.
+The simplest thing to do at the moment is to just put the whole <tt>moja-http.jar</tt> in the classpath.
+Later, you may prefer to use the much "lighter" <tt>stringtree-if.jar</tt> from the Stringtree project,
+which contains all the interfaces needed to write applications that use Mojasef, but contains no
+implementation code to slow down and clutter up compilation.</p>
+
+<p>To compile the class either place stringtree-if.jar or moja-http.jar in your classpath or use:</p>
+
+<p><tt>javac -classpath moja-http.jar Hello.java</tt></p>
+
+<p>As an aside, when Mojasef starts up, it will look for class directories and jar files in a <tt>lib</tt>
+directory, so when you find that you want to use external APIs or libraries in your applications or
+components, just pop them in there.</p>
+
+<p>Now we have a context to look in, we really ought to use this new parameter to fetch some information. let's print
+the originating IP address of the request and the browser identification header, and (to make our greeting more
+personal), the value of a supplied "name" parameter.</p>
+
+<div class='code'><pre>
+import org.stringtree.StringFetcher;
+
+public class Hello
+{
+  int n = 1;
+
+  public void sayhello(StringFetcher context)
+  {
+
+    System.out.println("Hello, " + context.get("name");
+    System.out.println("visit number " + n++);
+    System.out.println("from IP: " + context.get("remote.address"));
+    System.out.println("browser: " + context.get("http.request.header.User-Agent"));
+  }
+}
+</pre></div>
+
+<p>If you pop to the browser and request your mojasef URL (probably still <tt>http://localhost/sayhello</tt>),
+you should see something starting with
+<ul>Hello, visit number 1 from IP: </ul>
+Now if you pass in a parameter by using <tt>http://localhost/sayhello?name=Frank</tt> You should see a message
+starting with</p>
+
+<ul>Hello, Frank visit number 2 from IP: </ul>
+
+<p>If you want something other than an empty string to appear when no parameter is supplied, you can easily set
+a default value in the same place you sett <tt>http.application</tt>. Add the following line to <tt>http.spec</tt> and
+restart the server:
+
+<p><tt>name=Mystery Guest</tt></p>
+
+<p>Now, viewing <tt>http://localhost/sayhello</tt> gives:</p>
+
+<ul>Hello, Mystery Guest visit number 1 from IP: </ul>
+
+<a name='passing_things_back'><b>Passing things back to the server</b></a>
+
+<p>This is all simple enough, but the output is beginning to look a bit messy. Despite using "println" to
+put our text on separate lines, the web browser is treating it as HTML, and displaying it all on one line.
+A simple way to fix this is to set the output "content type" to <tt>text/plain</tt> to override the default.
+You may notice that the StringFetcher we are passing in to this method only has "get" methods, If we want
+to be able to "<tt>put</tt>" output values as well, we need to pass in a <tt>StringRepository</tt> instead. Let's
+modify our class by changing the import statement and the parameter declaration:</p>
+
+<div class='code'><pre>
+import org.stringtree.StringRepository;
+
+public class Hello
+{
+  int n = 1;
+
+  public void sayhello(StringRepository context)
+  {
+    System.out.println("Hello, " + context.get("name");
+    System.out.println("visit number " + n++);
+    System.out.println("from IP: " + context.get("remote.address"));
+    System.out.println("browser: " + context.get("http.request.header.User-Agent"));
+  }
+}
+</pre></div>
+
+<p>If you compile and run this, you'll notice that it behaves exactly as it did before. A StringRepository is also
+a StringFetcher, and provides all the same methods and results. StringRepository also provides two extra methods,
+with pretty obvious uses:</p>
+
+<ul>
+<li><tt>public void put(String name, Object value);</tt></li>
+<li><tt>public void remove(String name);</tt></li>
+</ul>
+
+<p><i>Actually, StringRepository also provides a <tt>clear()</tt> method, but using it in a Mojasef application
+can be a very quick way to screw up your program unless you know exactly what you are doing.</i></p>
+
+<p>To set the page content-type, let's add a line to put "text/plain" back into the context:</p>
+
+<div class='code'><pre>
+import org.stringtree.StringRepository;
+
+public class Hello
+{
+  int n = 1;
+
+  public void sayhello(StringRepository context)
+  {
+    System.out.println("Hello, " + context.get("name");
+    System.out.println("visit number " + n++);
+    System.out.println("from IP: " + context.get("remote.address"));
+    System.out.println("browser: " + context.get("http.request.header.User-Agent"));
+
+    context.put("http.response.header.Content-Type", "text/plain");
+  }
+}
+</pre></div>
+
+<p>Compile the class and restart the server. You should now see your messages in glorious plain-text-o-vision.</p>
+
+<p>There are, of course, pleanty of other things you can put back into the context. Anything with a name starting with
+<tt>http.response.header.</tt> will be sent as an outgoing header. You can set the HTTP response code
+(e.g. 404 for missing page) using <tt>http.response.code</tt>, and set outgoing cookies by starting names with
+<tt>http.response.cookie.</tt>. You can also set any other value you like, to be used in a page template, but <i>that</i>
+will be introduced in a little while, below. For more details of any of this, see the <a href='manual.html'>manual</a>.</p>
+
+<a name='sharing_context'><b>Sharing context between several methods</b></a>
+
+<p>Remember I mentioned another way of getting information from the server?
+If we want to keep our methods with no parameters (this is more usual when there are several
+other pre-existing methods in the class which we also want to make available on the web), we can make use
+of another mojasef feature. Before calling any method on our object, mojasef will first try the special method
+<tt>warmup</tt>. Just as with <tt>request</tt>, mojasef will look for <tt>warmup(StringRepository context)</tt>,
+<tt>warmup(StringFetcher context)</tt>, or <tt>warmup()</tt>. If you provide any of those public methods, mojasef
+will call it, and you can keep a copy of the supplied context if you want:</p>
+
+<div class='code'><pre>
+import org.stringtree.StringRepository;
+
+public class Hello
+{
+  int n = 1;
+  StringRepository context;
+
+  public void warmup(StringRepository context)
+  {
+    this.context = context;
+  }
+
+  public void sayhello()
+  {
+    System.out.println("Hello, " + context.get("name");
+    context.put("http.response.header.Content-Type", "text/plain");
+  }
+
+  public void secret()
+  {
+    System.out.println(context,get(name) + ", you found the hidden page :)");
+  }
+}
+</pre></div>
+
+<a name='nice_looking_pages'><p><b>Making nice-looking pages</b></p></a>
+
+<p>Interesting as that side-trip into sending our page as plain text was, it's not much use for the
+bulk of web pages. Most web pages use HTML, and use markup such as &lt;a href&gt; for links and &lt;p&gt;
+for paragraphs. If we want to put this sort of stuff in our pages, we've got quite a few choices.
+Popular approaches used with the Servlet API include:</p>
+
+<ul>
+<li>Generate HTML as strings in our application, e.g.
+<tt>System.out.println("&lt;b&gt;this is important&lt;/b&gt;");</tt></li>
+<li>Generate HTML using a special-purpose HTML-creation library (e.g.
+<a href='http://jakarta.apache.org/ecs/index.html'>Jakarta ECS</a>)</li>
+<li>Some form of "page compilation" such as <a href='http://java.sun.com/products/jsp/'>Java Server Pages</a></li>
+<li>Some form of combined scripting/templating approach (e.g. <a href='http://jakarta.apache.org/velocity/index.html'>velocity</a>,
+<a href='http://freemarker.sourceforge.net/'>FreeMarker<a>, or <a href='http://www.webmacro.org/'>Webmacro</a>)</li>
+<li>Generate an intermediate format (such as XML) in the code, and style it at run-time</li>
+<li>Generate (roughly) plain text and run it through a markup inference process (e.g.
+<a href='http://c2.com/cgi/wiki?TextFormattingRules'>Wiki markup</a> or
+<a href='http://www.python.org/sigs/doc-sig/stext.html'>Structured Text</a>)</li>
+</ul>
+
+<p>There are probably more. Realistically, you can use any of these with Mojasef, too. Mojasef also provides a few
+alternative options that (I feel) integrate better with the core application. To the above choices, Mojasef adds:</p>
+
+<ul>
+<li><b>Templates without scripting</b><br/>Mojasef includes a powerful template processing system with no need
+for any kind of "embedded" scripting language. Common operations such as indexing through lists
+and showing optional information are done using a kind of <i>algebra of templates</i>, More complex or
+application-specific operations are written as regular Java, just like Mojasef applications and components.
+Remember the principle of <i>self-similarity</i>.</li>
+<li><b>build HTML by assembling HTML fragments</b><br/>Mojasef's powerful "spec" mechanism allows
+large or small chunks of markup and text to be easily loaded from files, classpath resources or even remote URLs.</li>
+</ul>
+
+<p>To show how this works, let's go back a bit, to our application without the <tt>text/plain</tt>:</p>
+
+<div class='code'><pre>
+import org.stringtree.StringRepository;
+
+public class Hello
+{
+  int n = 1;
+
+  public void sayhello(StringRepository context)
+  {
+    System.out.println("Hello, " + context.get("name");
+    System.out.println("visit number " + n++);
+    System.out.println("from IP: " + context.get("remote.address"));
+    System.out.println("browser: " + context.get("http.request.header.User-Agent"));
+  }
+}
+</pre></div>
+
+<p>Now imagine we wish to "wrap" this content in a nice HTML web page. Here are the steps:</p>
+
+<ol>
+<li>Make sure there is a directory called <tt>templates</tt> in the current directory.</li>
+<li>Create a file <tt>default.tpl</tt> (in this case it could also be <tt>default.txt</tt> or <tt>default.html</tt>)</li>
+<li>add the following to the new file:
+<div class='code'><pre>
+&lt;html&gt;&lt;head&gt;&lt;title&gt;A greeting from Mojasef&lt;/title&gt;&lt;/head&gt;
+&lt;body&gt;
+&lt;img src='http://www.stringtree.org/mojasef/images/mojasef.jpg'/&gt;
+&lt;h2&gt;Welcome&lt;/h2&gt;
+My name is Mojasef,&lt;br/&gt;
+&lt;pre&gt;${CONTENT}&lt;/pre&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</pre></div></li>
+<li>Then (you don't need to restart the server) fetch the page <tt>http://localhost/sayhello</tt> again.
+</ol>
+
+<p>You should see a decorated page with the generated content nicely laid out in a preformatted block.
+Try changing the template and fetch the page again. You should see it change each time. The important thing
+to note about this is that you do not need to change the application to use different templates.</p>
+
+<p>However, that's not all. Specifying such a <tt>default</tt> template causes it to be applied to all pages
+generated by the application. This may be just what you want, but you may want something special for
+some pages. There are a few ways of changing this.</p>
+
+<ul>
+<li>You can decide which template to use in your application
+program:- put a value named <tt>page.template</tt> into the context, Mojasef will try and find a template
+with the same name as the value. If you put a value named <tt>page.class</tt>, Mojasef will look in the
+context or a value named <tt>template.class.<i>yourvalue</i></tt> and look for a template with the same name.</li>
+<li>You can specify a template with the same name as your application method, and it will be used in preference
+to the default.</li>
+</ul>
+
+<p>To show all these in action, let's add a few small methods to our application;</p>
+
+<div class='code'><pre>
+import org.stringtree.StringRepository;
+
+public class Hello
+{
+  int n = 1;
+
+  public void sayhello(StringRepository context)
+  {
+    System.out.println("Hello, " + context.get("name");
+    System.out.println("visit number " + n++);
+    System.out.println("from IP: " + context.get("remote.address"));
+    System.out.println("browser: " + context.get("http.request.header.User-Agent"));
+  }
+
+  public void ex1(StringRepository context)
+  {
+    System.out.println("This uses an explicit template");
+    context.put("page.template", "whatever");
+  }
+
+  public void ex2(StringRepository context)
+  {
+    System.out.println("This uses a page class");
+    context.put("page.class", "thing");
+  }
+
+  public void ex3(StringRepository context)
+  {
+    System.out.println("This uses a template with the same name");
+  }
+}
+</pre></div>
+
+<p>If you compile this and restart the server, then fetch the pages (using, for example <tt>http://localhost/ex1</tt>)
+you will see that they all still use the same default template. Mojasef tried to find the templates they ask for, but we
+haven't created them yet, so it falls back to what it knows. We can add appropriate templates to the system and see them in action. I'll let you create
+these templates as you like.  Just remember that the generated page content will appear wherever you put
+<tt>${CONTENT}</tt>. Any other context value can also be displayed by placing its name between <tt>${</tt> and
+<tt>}</tt>.</p>
+
+<ol>
+<li>Create a template (in the <t>templates directory, remember) called <tt>whatever.tpl</tt>, and fetch
+<tt>http://localhost/ex1</tt></li>
+<li>Add a line <tt>template.class.thing=whatever</tt> to <tt>http.spec</tt>, restart the server, and fetch
+<tt>http://localhost/ex2</tt>. You'll see that it uses the template you just created.</li>
+<li>Create a template called <tt>ex3.tpl</tt>, and fetch <tt>http://localhost/ex3</tt>.</li>
+</ol>
+
+<p>If all you want to do is return some static text, or examine some context values, without even running
+any application code, you can do that too.</p>
+
+<ol>
+<li>Create a template called <tt>ex4.tpl</tt>, and fetch <tt>http://localhost/ex4</tt>.</li>
+</ol>
+
+<a name='magic_with_templates'><p><b>Magic with Templates</b></p></a>
+
+<p>As a final twist, all the templates we have used so far are just what Mojasef considers <i>simple</i>
+templates. Templates can be made much more powerful by <i>setting</i> and <i>invoking</i> context values in
+the template itself, and by using the <i>algebra of templates</i> to process complex context values. More
+details can be found in the <a href='manual.html'>manual</a>.
+
+<p>Just to show how this can be useful, try the following:</p>
+
+<ol>
+<li>Create a template called <tt>dump.tpl</tt> with the following text in it:
+<ul><pre>
+&lt;table&gt;
+
+&lt;tr&gt;&lt;th colspan='2'&gt;Request Context - only available during a request&lt;/th&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;th&gt;Name&lt;/th&gt;&lt;th&gt;Value&lt;/th&gt;&lt;/tr&gt;
+${request.context*row}
+
+&lt;tr&gt;&lt;th colspan='2'&gt;System Context - available at any time&lt;/th&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;th&gt;Name&lt;/th&gt;&lt;th&gt;Value&lt;/th&gt;&lt;/tr&gt;
+${system.context*row}
+
+&lt;/table&gt;
+</pre></ul></li>
+<li>Create a template called <tt>row.tpl</tt> with the following text in it:
+<ul><pre>
+&lt;tr&gt;&lt;td&gt;${CONTENT}&lt;/td&gt;&lt;td&gt;${^CONTENT}&lt;/td&gt;&lt;/tr&gt;
+</pre></ul></li>
+<li>Fetch <tt>http://localhost/dump</tt></li>
+<li>Marvel at the huge collection of context names and values for you to use in your
+templates and applications.</li>
+</ol>
+
+<center><hr width='50%'/></center>
+<p>That's the end of this simple demonstration. For more information about what else you can do with
+Mojasef, you can either check out the next example <a href='ex_quiz.html'>Making a Quiz</a>, or head
+straight for the <a href='manual.html'>manual</a>. Have Fun!</p>
+
+<div style='width:100%; height:10px;'></div>
+<div style='width:100%' align='center'>
+<a href='https://sourceforge.net/project/showfiles.php?group_id=127152'><img src='images/but-download.jpg' border='0'/></a>
+<a href='principles.html'><img src='images/but-principles.jpg' border='0'/></a>
+<a href='home.html'><img src='images/but-home.jpg' border='0'/></a>
+<a href='manual.html'><img src='images/but-manual.jpg' border='0'/></a></div>
+
+<center><hr/></center>
+<div align='right'><a rel="license" href="http://creativecommons.org/licenses/by/2.0/"><img src="images/cc.primary.srr.gif" width="88" height="31" alt="Creative Commons License" border="0" /></a><br />
+This site is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/2.0/" class="subfoot">Creative Commons License</a></div>
+</div>
+
+<div class='sidebar'>
+<script type="text/javascript"><!--
+google_ad_client = "pub-7685453872376476";
+google_ad_width = 120;
+google_ad_height = 600;
+google_ad_format = "120x600_as";
+google_ad_channel ="8998537646";
+google_color_border = "7E9E79";
+google_color_bg = "FFFFDD";
+google_color_link = "EBABCE";
+google_color_url = "000099";
+google_color_text = "000000";
+//--></script>
+<script type="text/javascript"
+  src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
+</script>
+<p/>
+<a href="http://www.dpbolvw.net/click-1405768-8286431" target="_top" >
+<img src="http://www.ftjcfx.com/image-1405768-8286431" width="120" height="60" alt="Don't let expensive hosts eat your profits!" border="0"></a>
+</div></body></html>

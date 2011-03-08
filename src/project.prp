@@ -1,0 +1,16 @@
+# APP is mandatory, and is used for the name of the sopurce archive.
+# If no overriding deploy.name is specified in deploy.prp, it is also used
+# a the name for the generated jar/war file
+#
+APP=mojasef
+
+# APPTYPE is optional, and may be jar, war, zip or none
+#
+APPTYPE=jar
+
+ROOT-CLASS=org.stringtree.mojasef.Server
+
+APPNAME=Mojasef
+AUTHOR=Frank Carver
+
+

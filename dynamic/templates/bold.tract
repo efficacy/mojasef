@@ -1,0 +1,3 @@
+# a template that wraps some text in <b></b>
+
+<b>${CONTENT}</b>

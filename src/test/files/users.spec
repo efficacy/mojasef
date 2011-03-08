@@ -1,0 +1,2 @@
+frank=secret
+example=easy

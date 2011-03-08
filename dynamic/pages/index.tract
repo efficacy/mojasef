@@ -1,0 +1,14 @@
+# example tract
+page.template = bordered
+
+hello, ${user.name} (${system.timestamp}) [<a href='/auth/logout'>logout</a>]
+
+<ul>
+<li><a href='stuff'>indirect content using content-location</a>
+<li><a href='stuff2'>indirect content using CONTENT@=</a>
+<li><a href='section/example'>subdirectory entry</a>
+<li><a href='section/pretend.html'>file pretending to be static html</a>
+<li><a href='section/pretend2.html'>another file pretending to be static html</a>
+</ul>
+
+<p>resource text is '${text}'

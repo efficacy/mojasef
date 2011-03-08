@@ -1,0 +1,4 @@
+# example page in subdirectory
+
+${*navigation}
+hello from down here!

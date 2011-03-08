@@ -1,0 +1,11 @@
+# template to wrap a whole page in a simple border
+border.colour=aqua
+border.width=2
+box.width=99%
+
+${*navigation}
+<center><table border='${border.width}' width='${box.width}'><tr><td bgcolor='${border.colour}'>
+${CONTENT}
+</td></tr></table></center>
+<hr>
+<i>last modified by ${author*bold} ${system.timestamp}</i>

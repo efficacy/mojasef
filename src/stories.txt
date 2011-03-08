@@ -1,0 +1,195 @@
+Mojasef Stories
+
+---- Current
+
++ decide on candidate features and timeline for beta and final 2.0 releases
++ support themes/plugins/widgets approach to application building
++ plug point for cached template fetcher
+
+---- this release (a4)
+
++ multipart upload support
++ basic (static zone) authentication
++ basic (challenge/response) authentication
++ performance / scalability testing
++ session reaper and configs (c.f. Phil Zoio's EUP version?)
++ better control of session cookie expiry
++ automatic generation of default project structure (eclipse)
++ automatic generation of test case framework for testing new apps
++ standalone tool to bundle app and (slimmed?) mojasef/stringtree into a single war for generic deployment
+
+---- next release (a5)
+
++ attempt to serve all unrecognized URLs as files from public (not just ones with "." in them)
++ derive response message from response code if not set
++ initial stab at UserAgentRouter
+
+---- unscheduled
+
++ Harry Pynn 20090123: enable applications which are constructed in a mount spec file to modify the common context in their init method.
++ add object to context providing case-insensitive access to headers (test in templates and context.get)
++ work out a sensible way to handle encasing generated page templates in a generic/fallback wrapper
++ add support for "mojasef.server.instance.name" in non-servlet servers
++ location/timezone-aware date formatter (& use in blog benchmark app)
++ support sessions as query parameters (c.f. Phil Zoio's EUP version?)
++ merge/reorganize HTTP and Mojasef constants
++ support application dir (zones) structure (http.spec, classes, templates, private, public)
++ set "current directory" to "private" dir if available
++ consider caching reflection info
++ automatically pick up list of extension/mime mappings from file/resource if present
++ allow override of zone urls, in spec
++ support loading of app from zip/jar file
++ support loading of complete app from remote URL
++ support loading of individual zones from remote URL
++ allow matching of page names with extensions ("index.html" as well as "index", for example)
++ remove explicit default application support, replace with default not-found template
++ Finish tutorial on making a quiz
++ LogFormatter
++ Detect if default port is busy, and suggest an alternative (e.g. 3074, 8099 ?)
++ add docs/examples of using Dumper and Folder
++ build various options, different jar files (with/without HTTP, with/without Stringtree, etc.)
++ untangle filetree server into reusable components and datastores
++ example application using templates (rails-style todo list?, proposal logger?, quiz?)
++ example of using templates to generate RSS, WML etc.
++ utility methods for setting cookie path, domain, and expiry in the correct formats
++ printable style in css for web site
++ start on the manual (structure? layout? HTML vs PDF etc.)
++ update build status/release_notes document
++ inform testers
++ consider "peelback" in looking for templates to apply to static/external files
++ consider a mechanism for wrapping detected template
++ slideshows, web videos etc.
++ find/make database (SimpleORM? Hibernate? Stringtree DatabaseWrapper) and mail tools to compete with rails
++ find/make input/output template builder to compete with rails
++ add support for AJAX:
+-- serving/cacheing of javascript libs
+-- encoding/decoding of XML requests and responses
+-- external site tunnel/proxy to allow remote AJAX requests to pass through the server
++ support remote auth / indirect proxy auth
++ support simple pluggable auth
++ add suppport for better authentication (e.g jcaptcha)
++ general purpose cache wrapper (dynamic proxy?)
++ create/port other applications (e.g. Friki, Punchbarrel, Quiz, IronStylus, Barry's Balls)
++ write up TDD of application(s) as tutorial
++ example using recursive templates to show a tree structure (such as a menu) http://rifers.org/examples/
++ dynamic reloading of changed classes/jars
++ look at using NIO for socket listening and stream copying (or integrate with Grizzly?)
++ support HTTP/1.1 and keepalive
++ support other protocols, e.g FTP, SMTP, POP3
++ examples of using the page-storage/templating system for other uses (site-building, bulk-processing, etc.)
++ automatic generation of default project structure (netbeans, etc.)
+
++ consider how to provide a simple "portal" container which uses Mojasef to mount and link snippets
++ consider an "application bundle" format for easy deployment
++ consider the idea of a Mojasef container with a remote/web/scriptable interface for deploying apps etc.
++ book "test driven development of Java web applications using Mojasef"
+
+---- Done (a1)
+
++ import old ws source
++ update to recent Java (collections etc.)
++ convert to use fetcher/context for parameters
++ dynamic calling of "init" and "request" mesthods
++ read basic spec files
++ read enhanced spec files
+  "=quoted
+  []=space-sep array of strings
+  @=URL/file
+  $=class/object with optional init
+  $[] = array of class/object with init
+  @[] = array of files/URLs
+  pass command tail to constructor for $
++ decode (laziliy?) incoming headers/cookies and parameters
++ think of a name ( mojasef, ... )
++ create a sourceforge project
++ move spec.* to stringtree
++ move MethodCallUtils to stringtree
++ context dump application
++ why do the loaded system properties have the '\' characters translated?
++ corrected parsing of incoming cookies
++ allow setting of outgoing headers/cookies
++ page class system to loosen dependency on template names
++ ability to mount applications on paths/regexes
++ basic filter mechanism to allow preprocessing of requests
++ tweak dump application to sort/unique entries and show the whole request config rather than just the top layer
++ classpath setting from spec parameters
++ spec now supports ! for resource (classpath) fetch
++ autoload jars in "lib" directory for utility and application code
++ way of "wrapping" requests for sitewide look-n-feel or pre-fetch authentication
++ fallback sequence for methods to look for (fullURL,localpart,head,method,etc.)
++ basic session/continuation support
++ abstract session/continueation support to a wrapper class rather than a base class (self-similarity!)
++ 404 application to add at the end of the chain (or call directly from mono-apps)
++ build as standalone jar
++ make sure that built-in configs support out-of-the box examples
++ sort out storing/accessing templates stored in the context
++ sort out the template conflict between "CONTENT" and "this". Self-similarity!
++ rename Mounter to Folder
++ describe how to get a list of context keys in tutorial
++ test the initial tutorial code (on a fresh machine?)
++ split docs into separate pages
++ link to sourceforge download area in docs
++ write release notes and build status
++ create site and upload docs
++ get JR staff to try it out
++ describe use of automatic templates in tutorial
+
+---- Done (a2)
++ split tutorial examples into separate files
++ File Logger
++ (Stringtree) add += -= to spec
++ support calling application methods which return String instead of System.out.println
+
+---- Done (a3)
++ Make template expansion easy to use in application code
++ (Stringtree) sort out the problem with nested tract template attributes
++ untangle template location/expansion from HTTP to context helper utility
++ add "pipe" support to allow values to be passed to methods
++ find out how to set return code as a side effect of a template
++ unit tests for core behaviour
++ mojasef test "server" which allows full Junit testing of application image without HTTP
++ get working with Simon's blog benchmark
++ untangle template server into reusable components and datastores
++ bring standalone server in line with new design
++ integrate with regular servlet container
++ extract commonalities between test server, standalone server and servlet server
++ default to looking for spec in web app classpath
++ Investigate Ernest's classpath issues
++ investigate Ernest's Session issues
++ ant build to bundle app and (slimmed?) mojasef/stringtree into a single war for generic deployment
++ support implicit location of app zones from spec location
++ basic set of extension/mime mappings for serving static files
++ basic remote unit tests
++ make sure all mojasef code gets linked into jar
++ add URL-path-based template source rather than just a local directory
++ development test harness for applications
+
+---- Done (a4) (a.k.a 2.0.b1) released 20 July 2007
++ initial support for mime-type lookup when serving static files
++ location/timezone-aware date formatter (& use in blog benchmark app)
++ (servlet) get POST support working properly
++ (standalone) reliable way to quickly shut-down a server when used in a teat
++ (standalone) simpler way of passing in-memory configs to server when used in a test
++ (standalone) simple programmatic configuration for embedded use (see http://docs.codehaus.org/display/JETTY/Embedding+Jetty )
++ (servlet) ensure that a single Server instance is shared between all servlets
++ (standalone) fix init passthrough to application from server
++ (standalone) add terminate call to application when server shuts dowb
++ (servlet) correct the single Server instance code to correctly handle multiple mojasef apps ina single war
++ (servlet) add support for "mojasef.server.name" to pass in the servlet-name configured in web.xml
++ allow setting of context values in "init" as well as "warmup"
++ (servlet) remove the limit on supported request methods to allow implementation of full REST/RADAR software
++ bring the Folder stuff in line with modern practices, add tests
++ add a context-based folder mechanism in addition to the separate spec file version
++ example application using REST
++ rename Folder to URLRouter
++ add support for application-supplied Fetcher of "first class" context objects
++ tweak build script to avoid eclipse/ant clashes
++ remove a bunch of obsolete ant scripts
++ remove the duplication of separate request method symbols in MojasefConstants and HTTPConstants
++ support blah/GET style of REST-friendly template definition
++ allow simpler use of RESTCollection in common cases by separating out default look and feel
++ initial go at HTTP basic authentication for use in REST applications
++ small tidyup of object creation to allow reference to context items instead of full class+parameter specifications
++ adjusted LiteralRouter to prevent an extraneous call to "init"
++ updated release number to define this as the first beta of 2.0
++ set eclipse project and Ant build to force Java 1.4 compatibility

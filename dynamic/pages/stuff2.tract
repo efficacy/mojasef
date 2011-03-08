@@ -1,0 +1,2 @@
+# example wrapper for the content file "stuff.html"
+CONTENT@ = dynamic/content/stuff.html

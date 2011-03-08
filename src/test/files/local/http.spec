@@ -1,0 +1,1 @@
+http.application$=tests.LocalApp

@@ -1,0 +1,38 @@
+<html><head><title>Mojasef release notes: version 0.0.1.2</title></head><body>
+
+<h2>Mojasef release notes: version 0.0.1.2 (2005/02/02)</h2>
+
+<h3>About this release</h3>
+
+<p>This release is the first "alpha" released to sourceforge and offered for initial
+testing by a select group. The basic functionality should largely be there, but dark
+corners are unexplored, and several key areas are still unimplemented.</p>
+
+<h3>Changes since the previous version</h3>
+
+<ul>
+<li>None.</li>
+</ul>
+
+<h3>Known problems</h3>
+
+<ul>
+
+<li><b>Sessions last forever</b>. I had to pull the session reaping code at the last minute,
+so bear in mind that memory usage will grow if this server is left running.</li>
+<li><b>Manual missing</b>. I thought I'd get this out for experimentation while I continue
+with the manual. The examples give a brief overview, though.</li>
+<li><b>Several spec handlers still unimplemented</b>. Several key spec suffix handlers still
+need implementing including '#' (Map), '%' (Cache) , '+' (add), '&' (fallback), '*' (expand)</li>
+<li><b>Simplistic Session cookie</b> The generated session cookie is just an incrementing number,
+there may be problems with this.</li>
+<li><b>Only HTTP/1.0</b> Mojasef does not support any HTTP/1.1 features such as "keepalive"</li>
+<li><b>Apparent problem with nested tract templates</b>. During experimentation before release
+a fault was discovered with the loading of tract attributes in nsted templates. This is not yet
+covered by the test suite.</li>
+<li><b>No Cookie utilities</b>. If you want to write cookies you're on your own. Mojasef needs
+some cookie-building utility methods.</li>
+
+</ul>
+
+</body></html

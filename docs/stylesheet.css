@@ -1,0 +1,29 @@
+.code {
+ font-family: Courier, "Courier New", monospace;
+ border: solid 2px #dec7a4;
+ color: black;
+ background: #ffffff;
+ padding-left: 5px;
+ padding-right: 5px;
+ white-space: pre;
+}
+
+body {
+ background: #000000;
+}
+
+.wholepage {
+ position: absolute;
+ top: 2px;
+ left: 2px;
+ background: #ffffdd;
+ width: 720px;
+ padding-left: 10px;
+ padding-right: 10px;
+}
+
+.sidebar {
+ position: absolute;
+ top: 1px;
+ left: 750px;
+}

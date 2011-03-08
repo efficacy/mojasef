@@ -1,0 +1,4 @@
+# error page for 404 error
+
+${*navigation}
+Oops, 404: (${system.timestamp})

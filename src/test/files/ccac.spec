@@ -1,0 +1,2 @@
+key1=value1
+http.application.context$=stubs.ExampleApplicationContext

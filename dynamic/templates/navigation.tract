@@ -1,0 +1,3 @@
+# standard (if very simple) navigation bar
+
+<a href='${http.app.mount.point}'>back to top</a> ... <br/>

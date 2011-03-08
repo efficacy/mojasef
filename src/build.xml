@@ -1,0 +1,104 @@
+<project name="mojasef" default="cycle" basedir="..">
+  <property name="project.name" value="mojasef"/>
+  <property file="/opt/stringtree/conf/development.properties"/>
+  <property name="repository.location" value="../_repository"/>
+  <property file="src/relnum.prp"/>
+  <property name="version" value="${version.major}.${version.minor}.${version.step}"/>
+
+  <path id="classpath">
+    <fileset dir="lib">
+      <include name="*.jar"/>
+    </fileset>
+    <pathelement location="ant/bin"/>
+    <pathelement location="ant/testbin"/>
+    <pathelement path="${java.class.path}"/>
+  </path>
+
+  <path id="testclasspath">
+    <path refid="classpath"/>
+  </path>
+
+  <target name="clean">
+  	<tstamp/>
+  	<delete><fileset dir="ant/bin" includes="**"/></delete>
+  	<delete><fileset dir="ant/testbin" includes="**"/></delete>
+  </target>
+	
+  <target name="synclibs">
+	<copy file="${repository.location}/stringtree.jar" todir="lib" failonerror="false"/>
+	<copy file="${repository.location}/servlet.jar" todir="lib" failonerror="false"/>
+	<copy file="${repository.location}/junit.jar" todir="lib" failonerror="false"/>
+	<copy file="${repository.location}/httpunit.jar" todir="lib" failonerror="false"/>
+  </target>
+	
+  <target name="build" depends="clean,synclibs">
+  	<javac classpathref="classpath" srcdir="src/delivery/java" destdir="ant/bin" debug="on"/>
+  	<javac classpathref="testclasspath" srcdir="src/test/java" destdir="ant/testbin" debug="on"/>
+  	<javac classpathref="testclasspath" srcdir="src/plugins/java" destdir="ant/testbin" debug="on"/>
+  </target>
+
+  <target name="dist" depends="build">
+    <mkdir dir="dist"/>
+  	<zip destfile="dist/${project.name}-${version}.jar">
+        <fileset dir="ant/bin"/>
+    </zip>
+  	<zip destfile="dist/${project.name}-${version}-withdependencies.jar">
+        <zipfileset src="dist/${project.name}-${version}.jar"/>
+        <zipfileset src="${repository.location}/stringtree.jar"/>
+    </zip>
+  	<copy file="dist/${project.name}-${version}.jar" todir="${repository.location}"/>
+  	<copy file="dist/${project.name}-${version}-withdependencies.jar" todir="${repository.location}"/>
+  	<copy file="dist/${project.name}-${version}-withdependencies.jar" tofile="${repository.location}/${project.name}.jar"/>
+  	<copy file="dist/${project.name}-${version}.jar" tofile="dist/${project.name}.jar"/>
+  </target>
+
+  <target name="backup" depends="clean">
+	<mkdir dir="dist"/>
+	<zip destfile="${repository.location}/${project.name}-${DSTAMP}-${TSTAMP}.zip">
+      <zipfileset dir=".">
+      	<exclude name="dist/**"/>
+      	<exclude name="build/**"/>
+      </zipfileset>
+    </zip>
+  </target>
+
+  <target name="export-src" depends="clean">
+    <zip destfile="dist/${project.name}-${version}-src.zip" >
+      <zipfileset dir="src" prefix="${project.name}/src"/>
+      <zipfileset dir="docs" prefix="${project.name}/doc"/>
+      <zipfileset dir="dynamic" prefix="${project.name}/dynamic"/>
+    </zip>
+    <copy file="dist/${project.name}-${version}-src.zip" tofile="dist/${project.name}-src.zip" overwrite="true"/>
+    <copy file="dist/${project.name}-src.zip" todir="${repository.location}" overwrite="true"/>
+
+	<zip destfile="dist/${project.name}-${version}-sources.jar">
+    	<zipfileset dir="src/delivery/java"/>
+	</zip>
+    <copy file="dist/${project.name}-${version}-sources.jar" todir="${repository.location}" overwrite="true"/>
+
+  	<zip destfile="dist/${project.name}-${version}-withdependencies-sources.jar">
+  		<zipgroupfileset file="dist/${project.name}-${version}-sources.jar"></zipgroupfileset>
+  		<zipgroupfileset file="${repository.location}/stringtree-sources.zip"></zipgroupfileset>
+  	</zip>
+    <copy file="dist/${project.name}-${version}-withdependencies-sources.jar" todir="${repository.location}" overwrite="true"/>
+    <copy file="dist/${project.name}-${version}-withdependencies-sources.jar" tofile="${repository.location}/${project.name}-withdependencies-sources.zip" overwrite="true"/>
+  </target>
+	
+  <target name="publish" depends="release">
+  	<ftp server="${repository.server}" port="${repository.port}"
+         userid="${repository.userid}" password="${repository.password}"
+         remotedir="${repository.root}/org/stringtree/mojasef/${version}"
+  		 verbose="yes" depends="yes">
+      <fileset dir="dist">
+        <include name="${project.name}-${version}.jar"/>
+        <include name="${project.name}-${version}-withdependencies.jar"/>
+        <include name="${project.name}-${version}-sources.jar"/>
+        <include name="${project.name}-${version}-withdependencies-sources.jar"/>
+  	  </fileset>
+    </ftp>
+  </target>
+
+  <target name="cycle" depends="dist, export-src"/>
+  <target name="release" depends="clean, cycle"/>
+
+</project>

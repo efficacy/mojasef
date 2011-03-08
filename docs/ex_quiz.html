@@ -1,0 +1,194 @@
+<LINK REL="stylesheet" TYPE="text/css" HREF="stylesheet.css" TITLE="Style">
+<http><head><title>Mojasef - a modular java server framework</title></head>
+<body><div class='wholepage'>
+<div align='center'><a href='index.html'><img src='images/mojasef.jpg' border='0'/></a></div>
+
+<div style='width:100%; height:10px;'></div>
+<div style='width:100%' align='center'>
+<a href='http://sourceforge.net/project/showfiles.php?group_id=127152'><img src='images/but-download.jpg' border='0'/></a>
+<a href='principles.html'><img src='images/but-principles.jpg' border='0'/></a>
+<a href='index.html'><img src='images/but-home.jpg' border='0'/></a>
+<a href='manual.html'><img src='images/but-manual.jpg' border='0'/></a></div>
+
+<h2>Making a Quiz</h2>
+
+<p>A tutorial which works through creating a relatively simple application showing a way to design, test,
+and implement a complete Mojasef project from scratch.</p>
+
+<b>Contents</b>
+<ol>
+<li><a href='#what_are_we_trying_to_do'>What Are We Trying To Do?</a></li>
+<li><a href='#architecture'>Architecture</a></li>
+<li><a href='#a_bank_of_questions'>A Bank of Questions</a></li>
+<li><a href='#a_way_to_record_the_answers'>A Way To Record The Answers</a></li>
+<li><a href='#keeping_track_of_questions'>Keeping tract of who has attempted which question</a></li>
+
+<!--
+<li><a href='#counting_hits'>Counting Hits</a></li>
+<li><a href='#user_sessions'>User Sessions</a></li>
+<li><a href='#permanent_configurations'>Permanent Configurations</a></li>
+<li><a href='#catching_all_accesses'>Catching All Accesses</a></li>
+<li><a href='#finding_things_out'>Finding Things Out</a></li>
+<li><a href='#passing_things_back'>Passing Things Back To The Server</a></li>
+<li><a href='#sharing_context'>Sharing Context Between Several Methods</a></li>
+<li><a href='#nice_looking_pages'>Making Nice Looking Pages</a></li>
+<li><a href='#magic_with_templates'>Magic With Templates</a></li>
+-->
+
+</ol>
+
+<a name='what_are_we_trying_to_do'><b>What are we trying to do?</b></a>
+
+<p>The real purpose of this tutorial is to show how you can use Mojasef in a realistic application.
+In order to do that, however, let's pretend we want to create a little application to run a quiz.
+Perhaps this a quiz for a bunch of students in a classroom, to check their progress on the subject of
+today's lesson. It feels like an ideal first application for Mojasef.</p>
+
+<p>The most important thing at this stage is not to get to grandiose and overcomplicated. We want to
+be able to get something working as soon as possible. We'll start by thinking about some "user stories". </p>
+
+<ul>
+<li>Each student should enter his or her name at the start
+<li>The application will show each question in turn and wait for an answer
+<li>Each question will consist of a description and several possible answers
+<li>To move on, a student must select one of the answers
+<li>Students may progress through the questions at different rates
+<li>When the final question has been answered the system will show the student a score
+<li>Student answers will be written to a file so that the teacher can analyse the results later
+</ul>
+
+<p>Notice that at this stage we are not really interested in the details of how things look.
+Mojasef allows us to defer that decision. All we need to make sure is that we have worked out the
+information that needs to be shown, and we can sort out the details of how it will appear on the
+screen by just tweaking with templates later. Without changing the working program.</p>
+
+<a name='architecture'><b>Architecture</b></a>
+
+<p>It seems from a first glance that there are several things that we might need in this
+application:</p>
+
+<ul>
+<li>A bank of questions
+<li>Somewhere to record student answers
+<li>Something to keep track of who has attempted which questions
+<li>A way to fetch questions in the correct order
+<li>Something to work out each student's final score
+</ul>
+
+<p>We want this application to be as quick to put together as possible, so I suggest that we start by
+looking at how much of this we have available already. With a bit of lateral thinking, I think we already
+have two of these as part of Mojasef, ready to be reused.</p>
+
+<a name='a_bank_of_questions'><b>A bank of questions</b></a>
+
+<p>It might be tempting to dash off and create a new class to store a question. Before we do that, let's look
+at what a question consists of:</p>
+
+<ul>
+<li>Some descriptive text</li>
+<li>two or more possible answers to select from</li>
+<li>the correct answer (not shown to the student, used when calculating the score)</li>
+</ul>
+
+<p>If I were writing such a question down on paper, I might write something like:</p>
+
+<div class='code'><pre>
+Two trains start 100 miles apart, travelling toward each other on a straight track.
+One train (train A) starts from Station A and travels at 50 miles per hour
+One train (train B) starts from Station B and travels at 25 miles per hour
+Where will the trains meet?
+
+1. Half way between Station A and Station B
+2. One third of the way between Station A and Station B
+3. Two thirds of the way between Station A and Station B
+4. Three Quarters of the way between Station A and Station B
+answer: 3
+</pre></div>
+
+<p>If we turn this "upside down" (and slightly tweak with the format) we get:
+
+<div class='code'><pre>
+1: Half way between Station A and Station B
+2: One third of the way between Station A and Station B
+3: Two thirds of the way between Station A and Station B
+4: Three Quarters of the way between Station A and Station B
+answer: 3
+
+Two trains start 100 miles apart, travelling toward each other on a straight track.
+One train (train A) starts from Station A and travels at 50 miles per hour
+One train (train B) starts from Station B and travels at 25 miles per hour
+Where will the trains meet?
+</pre></div>
+
+<p>This type of text, with a group of "header" lines, follwed by a blank line, followed by
+a chunk of multi-line "body" text should seem familiar. It's the same format used by the HTTP protocol
+for both requests and responses. It's the same format used for email messages. It's even the same
+format used by Mojasef for its own "advanced templates" and config files, as well as many other things.
+This is a popular way to represent a very common data structure - a block of text with an arbitrary
+number of name/value attributes. This idea is so common that Mojasef (or at least the
+Stringtree library used by Mojasef) has special support for it. In Stringtree and Mojasef,
+this data type is known as a Tract.</p>
+
+<p>Mojasef already contains code to load, parse and store Tracts, so we might as well use that to
+manage our bank of questions.</p>
+
+<a name='a way_to_record_the_answers'><b>A way to record the answers</b></a>
+
+<p>We don't really know what anyone will do with the results of these tests, but it's quite likely
+that a teacher might want to use something like a spreadsheet to analyse them. With this in mind
+it makes sens to write out the results in a format that suits loading into a spreadsheet. A common
+way of storing information for use in a spreadsheet is what's known as a <i>CSV</i> file. This
+consists of a bunch of lines, each line contains several fields separated by commas. Hence CSV -
+"<b>C</b>omma <b>S</b>eparated <b>V</b>alues".</p>
+
+<p>At this stage there is no need to read the answers back in to Mojasef, so we might as well just write them
+out to a file as they come in. This begins to sound a lot like logging - another function commonly included
+in servers and frameworks, so maybe we can re-use that too. Mojasef comes with the idea of logging, and one
+of the supplied logger classes can be used to append lines to a file. All we need to do is to instantiate
+such a logger object, point it at the output file, and make sure each line is correctly formatted. Luckily,
+Mojasef's built-in template processing tools can be used just as easily for fine-grained work such as formatting
+a line of data, as they can for producing complex web pages.</p>
+
+<a name='keeping_track_of_questions'><b>Keeping trac of who has attempted which question</b></a>
+
+<p>There are several ways we could approach keeping track of questions asked and answered. One of Mojasef's
+strengths is the way that it allows any class to
+
+<center><hr width='50%'/></center>
+
+<p>That's the end of this tutorial example. For more information about what else you can do with
+Mojasef, I recommend that you head
+straight for the <a href='manual.html'>manual</a>. Have Fun!</p>
+
+<div style='width:100%; height:10px;'></div>
+<div style='width:100%' align='center'>
+<a href='https://sourceforge.net/project/showfiles.php?group_id=127152'><img src='images/but-download.jpg' border='0'/></a>
+<a href='principles.html'><img src='images/but-principles.jpg' border='0'/></a>
+<a href='home.html'><img src='images/but-home.jpg' border='0'/></a>
+<a href='manual.html'><img src='images/but-manual.jpg' border='0'/></a></div>
+
+<center><hr/></center>
+<div align='right'><a rel="license" href="http://creativecommons.org/licenses/by/2.0/"><img src="images/cc.primary.srr.gif" width="88" height="31" alt="Creative Commons License" border="0" /></a><br />
+This site is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/2.0/" class="subfoot">Creative Commons License</a></div>
+</div>
+
+<div class='sidebar'>
+<script type="text/javascript"><!--
+google_ad_client = "pub-7685453872376476";
+google_ad_width = 120;
+google_ad_height = 600;
+google_ad_format = "120x600_as";
+google_ad_channel ="8998537646";
+google_color_border = "7E9E79";
+google_color_bg = "FFFFDD";
+google_color_link = "EBABCE";
+google_color_url = "000099";
+google_color_text = "000000";
+//--></script>
+<script type="text/javascript"
+  src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
+</script>
+<p/>
+<a href="http://www.dpbolvw.net/click-1405768-8286431" target="_top" >
+<img src="http://www.ftjcfx.com/image-1405768-8286431" width="120" height="60" alt="Don't let expensive hosts eat your profits!" border="0"></a>
+</div></body></html>

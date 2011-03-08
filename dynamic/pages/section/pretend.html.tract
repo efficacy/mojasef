@@ -1,0 +1,6 @@
+# a dynamic tract pretending to be a static html page
+author = Frank Carver
+page.class = static
+border.colour=goldenrod
+
+blah, blah ...
