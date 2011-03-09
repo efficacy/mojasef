@@ -4,14 +4,18 @@ import org.stringtree.fetcher.MapFetcher;
 import org.stringtree.finder.StringKeeper;
 import org.stringtree.mojasef.HTTPConstants;
 import org.stringtree.mojasef.KeyFinder;
+import org.stringtree.util.Factory;
 import org.stringtree.util.MethodCallUtils;
 
 public class SessionWrapper extends ApplicationWrapper {
-    protected MapFetcher sessions = null;
+    protected MapFetcher sessions = new MapFetcher();
     
     public SessionWrapper(String classname) {
         super(classname);
-        sessions = new MapFetcher();
+    }
+    
+    public SessionWrapper(Factory factory) {
+        super(factory);
     }
     
     public Object warmup(StringKeeper requestContext) {
