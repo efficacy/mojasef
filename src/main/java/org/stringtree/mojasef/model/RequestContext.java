@@ -4,7 +4,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 
 import org.stringtree.Fetcher;
@@ -16,6 +19,7 @@ import org.stringtree.fetcher.filter.StringPrefixFilter;
 import org.stringtree.mojasef.Alias;
 import org.stringtree.mojasef.HTTPConstants;
 import org.stringtree.mojasef.MojasefConstants;
+import org.stringtree.mojasef.util.MojasefUtils;
 import org.stringtree.util.IntegerNumberUtils;
 import org.stringtree.util.StreamUtils;
 import org.stringtree.util.StringUtils;
@@ -43,8 +47,15 @@ public class RequestContext extends FallbackRepository {
     }
     
     public void setHeader(String name, String value) {
-        put(HTTPConstants.REQUEST_HEADER+name, value);
-        put(HTTPConstants.REQUEST_HEADER+(name.toLowerCase()), value);
+        if ("cookie".equalsIgnoreCase(name)) {
+        	Map<String, String> cookies = extractCookies(value);
+        	for (Map.Entry<String, String> entry : cookies.entrySet()) {
+        		setCookie(entry.getKey(), entry.getValue());
+        	}
+        } else {
+	        put(HTTPConstants.REQUEST_HEADER+name, value);
+	        put(HTTPConstants.REQUEST_HEADER+(name.toLowerCase()), value);
+        }
     }
 
 	public void setRequest(String protocol, String method, String url, String query) {
@@ -212,4 +223,20 @@ public class RequestContext extends FallbackRepository {
         
         return type;
     }
+
+	public static void extractCookie(Map<String, String> cookies, String value) {
+		String[] parts = value.split("=");
+		cookies.put(parts[0].trim(), MojasefUtils.unescapeCookie(parts[1].trim()));
+	}
+
+	public static Map<String, String> extractCookies(String value) {
+		if (StringUtils.isBlank(value)) return Collections.emptyMap();
+		
+		Map<String, String> ret = new LinkedHashMap<String, String>();
+		String[] cookies = value.split(";");
+		for (String def : cookies) {
+	    	RequestContext.extractCookie(ret, def);
+		}
+		return ret;
+	}
 }

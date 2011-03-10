@@ -7,6 +7,7 @@ public class LocalTests extends TestCase {
 	public static TestSuite suite() {
 		TestSuite ret = new TestSuite();
 
+        ret.addTestSuite(StandaloneCookieTest.class);
         ret.addTestSuite(StandalonePostTest.class);
         ret.addTestSuite(StandaloneInitTerminateTest.class);
         ret.addTestSuite(LocalServerTest.class);
