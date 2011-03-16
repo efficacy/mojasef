@@ -109,6 +109,11 @@ public class Server {
     			convertStringListToFallbackFetcher(pubURL, false));
     }
     
+    public Server(Object app, String port, List<String> tplURL, List<String> pubURL, Collection<Alias> aliases) throws IOException {
+    	this(app, port, convertStringListToFallbackFetcher(tplURL, true), 
+    			convertStringListToFallbackFetcher(pubURL, false), aliases);
+    }
+    
     public void addAlias(Alias alias) {
     	if (null == aliases) {
     		aliases = new ArrayList<Alias>();
@@ -151,6 +156,7 @@ public class Server {
     }
 
     private void appCall(String method) {
+//Diagnostics.dumpFetcher(common, "Server.appCall common");
         Object application = common.getObject(MojasefConstants.HTTP_APPLICATION);
         
         if (application != null) {
@@ -162,7 +168,6 @@ public class Server {
     
     public void request(RequestContext req, OutputCollector res, Object dfl) {
         Fetcher context = new FallbackFetcher(req, common);
-        
         try {
             Object file = null;
             res.start();

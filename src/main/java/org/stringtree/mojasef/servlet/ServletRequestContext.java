@@ -42,7 +42,7 @@ public class ServletRequestContext extends RequestContext {
         String self = req.getRequestURI().toString();
         put(MojasefConstants.REQUEST_SELF, self);
 
-        String mount = req.getContextPath() + req.getServletPath();
+        String mount = StringUtils.nullToEmpty(req.getContextPath()) + StringUtils.nullToEmpty(req.getServletPath());
         if (!mount.endsWith("/")) mount += "/";
         put(MojasefConstants.MOUNTCONTEXT, mount);
 
