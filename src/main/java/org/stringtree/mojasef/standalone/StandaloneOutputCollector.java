@@ -59,7 +59,7 @@ public class StandaloneOutputCollector extends BasicOutputCollector {
     
     public void write(OutputStream out, byte[] bytes, String headers) throws IOException {
         ByteArrayOutputStream page = new ByteArrayOutputStream();
-        PrintStream print = new PrintStream(page);
+        PrintStream print = new PrintStream(out);
         print.print("HTTP/1.0 ");
         print.print(code);
         print.print(" ");
@@ -73,10 +73,10 @@ public class StandaloneOutputCollector extends BasicOutputCollector {
         print.print(HTTPConstants.WEB_EOL);
         print.print(HTTPConstants.WEB_EOL);
         if (null != bytes) print.write(bytes);
-        print.flush();
+        //print.flush();
 
         byte[] response = page.toByteArray();
-		out.write(response);
+		//out.write(response);
     }
 
     public int getResponseCode() {
