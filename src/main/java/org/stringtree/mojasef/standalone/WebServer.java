@@ -226,7 +226,7 @@ public class WebServer extends Thread implements Repository {
     	if (status.ordinal() < to.ordinal()) {
     		status = to;
     	} else {
-    		Diagnostics.whereAmI();
+    		//Diagnostics.whereAmI();
     	}
 		log("status change from " + current + " to " + status);
     	return status;
