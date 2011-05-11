@@ -13,7 +13,6 @@ import org.stringtree.mojasef.Alias;
 import org.stringtree.mojasef.model.NonTerminalAlias;
 import org.stringtree.mojasef.model.Server;
 import org.stringtree.mojasef.model.TerminalAlias;
-import org.stringtree.util.Diagnostics;
 import org.stringtree.util.IntegerNumberUtils;
 import org.stringtree.waiter.SelfWaiter;
 
